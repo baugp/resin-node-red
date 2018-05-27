@@ -10,26 +10,35 @@ WORKDIR /usr/src/app
 # Install node modules, including i2c-bus without carrying all the deps in the layers
 RUN apk add --no-cache make gcc g++ python && \
   JOBS=MAX npm install -g node-red node-red-contrib-resinio --production --silent && \
-  apk del make gcc g++ python && \
+  apk del make gcc g++ && \
   npm cache clean --force && rm -rf /tmp/*
 
 # Install packages for PiOLED and BME680
 RUN apk add --no-cache \
         --repository http://dl-3.alpinelinux.org/alpine/edge/testing/ \
-#        build-base \
+        build-base \
 #        git \
         i2c-tools \
-#        python \
-#        python-dev \
+        python \
+        python-dev \
         py-pip \
         py-smbus \
 #        py-psutil \
 #        eudev-dev \
+        py-pillow \
         && pip install --upgrade pip \
-        && pip install bme680
+        && pip install spidev RPi.GPIO bme680 \
+        && apk del build-base
 
 # This will copy all files in our root to the working  directory in the container
 COPY ./app ./
+
+# Install PiOLED
+RUN cd /usr/src/app/Adafruit_Python_SSD1306 && \
+  python setup.py install && \
+  cd /usr/src/app && \
+  rm -r /usr/src/app/Adafruit_Python_SSD1306 && \
+  rm -r /usr/src/app/Adafruit_SSD1306
 
 # Enable systemd init system in container
 # ENV INITSYSTEM=on

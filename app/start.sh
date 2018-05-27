@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# OLED daemon
+python /usr/src/app/PiOLED/stats.py &
+
 export DBUS_SYSTEM_BUS_ADDRESS=unix:path=/host/run/dbus/system_bus_socket
 
 # Make the default flows available in the user library
