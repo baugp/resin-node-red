@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 import time
-from time import gmtime, strftime
+from time import localtime, strftime
 import signal
 import socket
 import bme680
@@ -88,7 +88,7 @@ def main():
     disp, width, height, image, draw, top, bottom, x, font = init_PiOLED()
 
     while running:
-        TIME = strftime('%Y-%m-%d %H:%M:%S', gmtime())
+        TIME = strftime('%Y-%m-%d %H:%M:%S', localtime())
         ip = get_ip()
         host = socket.gethostname()
         HOST = 'IP: ' + ip + ' ' + host
