@@ -13,35 +13,42 @@ RUN apk add --no-cache make gcc g++ python && \
   apk del make gcc g++ && \
   npm cache clean --force && rm -rf /tmp/*
 
-# Install packages for PiOLED and BME680
-RUN apk add --no-cache \
-        --repository http://dl-3.alpinelinux.org/alpine/edge/testing/ \
-        build-base \
-#        git \
-        i2c-tools \
-        python \
-        python-dev \
-        py-pip \
-        py-smbus \
-#        py-psutil \
-#        eudev-dev \
-        py-pillow \
-        && pip install --upgrade pip \
-        && pip install spidev RPi.GPIO bme680 \
-        && apk del build-base
+# Setup SSH Server
+RUN apk add --no-cache --update openssh-server openssh-sftp-server && \
+  mkdir /var/run/sshd && \
+  echo 'root:resin' | chpasswd && \
+  sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config && \
+  rc-update add sshd
 
-# This will copy all files in our root to the working  directory in the container
+# Support for timezone
+RUN apk add --no-cache --update tzdata
+
+# Install packages for PiOLED and BME680
+RUN apk add --no-cache --update \
+  --repository http://dl-3.alpinelinux.org/alpine/edge/testing/ \
+  build-base \
+  i2c-tools \
+  python2 \
+  python2-dev \
+  py2-pip \
+  py-smbus \
+  py-pillow && \
+  pip install --upgrade pip && \
+  pip install spidev RPi.GPIO w1thermsensor bme680 && \
+  apk del build-base && \
+  rm -rf /tmp/*
+
+# This will copy all files in our root to the working directory in the container
 COPY ./app ./
 
-# Install PiOLED
+# Install PiOLED Python library
 RUN cd /usr/src/app/Adafruit_Python_SSD1306 && \
   python setup.py install && \
-  cd /usr/src/app && \
   rm -r /usr/src/app/Adafruit_Python_SSD1306 && \
-  rm -r /usr/src/app/Adafruit_SSD1306
+  rm -rf /tmp/*
 
 # Enable systemd init system in container
-# ENV INITSYSTEM=on
+ENV INITSYSTEM=on
 
 # server.js will run when container starts up on the device
 CMD ["bash", "/usr/src/app/start.sh"]
