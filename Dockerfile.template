@@ -13,6 +13,21 @@ RUN apk add --no-cache make gcc g++ python && \
   apk del make gcc g++ python && \
   npm cache clean --force && rm -rf /tmp/*
 
+# Install packages for PiOLED and BME680
+RUN apk add --no-cache \
+        --repository http://dl-3.alpinelinux.org/alpine/edge/testing/ \
+#        build-base \
+#        git \
+        i2c-tools \
+#        python \
+#        python-dev \
+        py-pip \
+        py-smbus \
+#        py-psutil \
+#        eudev-dev \
+        && pip install --upgrade pip \
+        && pip install bme680
+
 # This will copy all files in our root to the working  directory in the container
 COPY ./app ./
 
